@@ -1,22 +1,34 @@
-import sqlite3
-
 from flask import Flask, jsonify, render_template, request
-from data_processor import load_data
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+import sqlite3
+from data_processor import load_data  # Import the load_data function
 
 app = Flask(__name__)
 
+# Chemin vers la base de données SQLite
+DB_PATH = "violations.db"
+
+# Initialiser le BackgroundScheduler
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+# Planifier la tâche quotidienne à minuit pour charger les données
+scheduler.add_job(
+    load_data,  # Use the load_data function from data_processor.py
+    trigger=CronTrigger(hour=0, minute=0),  # Exécution tous les jours à minuit
+    id="sync_data",
+    replace_existing=True
+)
 
 @app.route('/load-data', methods=['POST'])
 def load_data_route():
+    """Route pour déclencher manuellement le chargement des données."""
     try:
         load_data()  # Appel à la fonction du fichier data_processor.py
         return jsonify({"message": "Données chargées avec succès"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# Chemin vers la base de données SQLite
-DB_PATH = "violations.db"
 
 
 @app.route("/", methods=["GET"])
@@ -62,4 +74,9 @@ def search():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    try:
+        # Démarrer l'application Flask
+        app.run(debug=True)
+    finally:
+        # Arrêter le scheduler lorsque l'application est arrêtée
+        scheduler.shutdown()

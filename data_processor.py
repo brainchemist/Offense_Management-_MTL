@@ -36,16 +36,20 @@ def insert_data(conn, csv_content):
     cursor = conn.cursor()
     reader = csv.DictReader(csv_content.splitlines())
     for row in reader:
-        cursor.execute("""
-            INSERT INTO violations (
-                id_poursuite, business_id, date, description, adresse, date_jugement,
-                etablissement, montant, proprietaire, ville, statut, date_statut, categorie
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            row['id_poursuite'], row['business_id'], row['date'], row['description'],
-            row['adresse'], row['date_jugement'], row['etablissement'], row['montant'],
-            row['proprietaire'], row['ville'], row['statut'], row['date_statut'], row['categorie']
-        ))
+        try:
+            cursor.execute("""
+                INSERT INTO violations (
+                    id_poursuite, business_id, date, description, adresse, date_jugement,
+                    etablissement, montant, proprietaire, ville, statut, date_statut, categorie
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                row['id_poursuite'], row['business_id'], row['date'], row['description'],
+                row['adresse'], row['date_jugement'], row['etablissement'], row['montant'],
+                row['proprietaire'], row['ville'], row['statut'], row['date_statut'], row['categorie']
+            ))
+        except sqlite3.IntegrityError:
+            # Skip les duplications
+            continue
     conn.commit()
 
 def load_data(db_path="violations.db"):
