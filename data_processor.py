@@ -54,3 +54,4 @@ def load_data(db_path="violations.db"):
     create_table(conn)
     insert_data(conn, csv_content)
     conn.close()
+
