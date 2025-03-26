@@ -66,6 +66,68 @@ def get_contrevenants():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/infractions', methods=['GET'])
+def get_infractions():
+    """Retourne les infractions pour un établissement spécifique."""
+    try:
+        # Récupérer le paramètre 'etablissement' depuis la requête
+        etablissement = request.args.get('etablissement')
+
+        # Valider que le paramètre est présent
+        if not etablissement:
+            return jsonify({"error": "Le paramètre 'etablissement' est requis."}), 400
+
+        # Construire la requête SQL pour filtrer par établissement
+        query = """
+            SELECT * FROM violations
+            WHERE etablissement = ?
+        """
+        params = (etablissement,)
+
+        # Exécuter la requête sur la base de données
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        conn.close()
+
+        # Récupérer les noms des colonnes pour les inclure dans le JSON
+        columns = [column[0] for column in cursor.description]
+
+        # Convertir les résultats en format JSON
+        data = [dict(zip(columns, row)) for row in results]
+        return jsonify(data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/etablissements', methods=['GET'])
+def get_etablissements():
+    """Retourne la liste distincte des établissements."""
+    try:
+        # Construire la requête SQL pour obtenir les établissements uniques
+        query = """
+            SELECT DISTINCT etablissement
+            FROM violations
+            ORDER BY etablissement
+        """
+
+        # Exécuter la requête sur la base de données
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(query)
+        results = cursor.fetchall()
+        conn.close()
+
+        # Convertir les résultats en format JSON
+        data = [{"etablissement": row[0]} for row in results]
+        return jsonify(data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/doc', methods=['GET'])
 def doc():
     """Affiche la documentation RAML du service web."""
