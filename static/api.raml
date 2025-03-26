@@ -1,0 +1,61 @@
+#%RAML 1.0
+title: Service des Contraventions
+version: v1
+baseUri: http://localhost:5000
+
+/contrevenants:
+  get:
+    description: Retourne la liste des contraventions émises entre deux dates spécifiées.
+    queryParameters:
+      du:
+        description: Date de début (format ISO 8601, ex. 2022-05-08).
+        type: string
+        required: true
+      au:
+        description: Date de fin (format ISO 8601, ex. 2024-05-15).
+        type: string
+        required: true
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {
+                  "id_poursuite": 12345,
+                  "business_id": "ABC123",
+                  "date": "2023-01-15",
+                  "description": "Infraction alimentaire",
+                  "adresse": "123 Rue Principale",
+                  "etablissement": "Restaurant XYZ"
+                }
+              ]
+      400:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Les paramètres 'du' et 'au' sont requis."
+              }
+      500:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Erreur interne du serveur."
+              }
+
+/doc:
+  get:
+    description: Affiche la documentation RAML du service web.
+    responses:
+      200:
+        body:
+          text/html:
+            example: |
+              <!DOCTYPE html>
+              <html>
+              <body>
+                <h1>Documentation de l'API</h1>
+              </body>
+              </html>

@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, jsonify, render_template, request
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -20,6 +21,57 @@ scheduler.add_job(
     id="sync_data",
     replace_existing=True
 )
+
+
+@app.route('/contrevenants', methods=['GET'])
+def get_contrevenants():
+    """Retourne la liste des contraventions entre deux dates spécifiées."""
+    try:
+        # Récupérer les paramètres 'du' et 'au' depuis la requête
+        date_du = request.args.get('du')
+        date_au = request.args.get('au')
+
+        # Valider que les deux paramètres sont présents
+        if not date_du or not date_au:
+            return jsonify({"error": "Les paramètres 'du' et 'au' sont requis."}), 400
+
+        # Valider le format des dates (ISO 8601)
+        try:
+            datetime.fromisoformat(date_du)
+            datetime.fromisoformat(date_au)
+        except ValueError:
+            return jsonify({"error": "Les dates doivent être au format ISO 8601 (YYYY-MM-DD)."}), 400
+
+        # Construire la requête SQL pour filtrer par dates
+        query = """
+            SELECT * FROM violations
+            WHERE date BETWEEN ? AND ?
+        """
+        params = (date_du, date_au)
+
+        # Exécuter la requête sur la base de données
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        conn.close()
+
+        # Récupérer les noms des colonnes pour les inclure dans le JSON
+        columns = [column[0] for column in cursor.description]
+
+        # Convertir les résultats en format JSON
+        data = [dict(zip(columns, row)) for row in results]
+        return jsonify(data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/doc', methods=['GET'])
+def doc():
+    """Affiche la documentation RAML du service web."""
+    return render_template("doc.html")
+
 
 @app.route('/load-data', methods=['POST'])
 def load_data_route():
