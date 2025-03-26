@@ -3,21 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche de Contraventions</title>
+    <title>Recherche de Contrevenants</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Recherche de Contraventions</h1>
-    <form action="/search" method="post">
-        <label for="etablissement">Nom d'établissement :</label>
-        <input type="text" id="etablissement" name="etablissement"><br><br>
+    <h1>Recherche de Contrevenants</h1>
 
-        <label for="proprietaire">Propriétaire :</label>
-        <input type="text" id="proprietaire" name="proprietaire"><br><br>
-
-        <label for="rue">Rue :</label>
-        <input type="text" id="rue" name="rue"><br><br>
-
+    <!-- Formulaire de recherche rapide -->
+    <form id="search-form">
+        <label for="du">Date de début (YYYY-MM-DD) :</label>
+        <input type="date" id="du" name="du" required>
+        <br><br>
+        <label for="au">Date de fin (YYYY-MM-DD) :</label>
+        <input type="date" id="au" name="au" required>
+        <br><br>
         <button type="submit">Rechercher</button>
     </form>
+
+    <!-- Tableau pour afficher les résultats -->
+    <h2>Résultats</h2>
+    <table id="results-table" border="1" style="display: none;">
+        <thead>
+            <tr>
+                <th>Nom de l'établissement</th>
+                <th>Nombre de contraventions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Les résultats seront insérés ici dynamiquement -->
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            // Gérer la soumission du formulaire via Ajax
+            $('#search-form').on('submit', function (event) {
+                event.preventDefault(); // Empêcher le rechargement de la page
+
+                // Récupérer les dates saisies
+                const dateDu = $('#du').val();
+                const dateAu = $('#au').val();
+
+                // Envoyer la requête Ajax
+                $.ajax({
+                    url: '/contrevenants',
+                    method: 'GET',
+                    data: { du: dateDu, au: dateAu },
+                    success: function (data) {
+                        // Vérifier si des erreurs sont retournées
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+
+                        // Afficher le tableau et remplir les résultats
+                        const tbody = $('#results-table tbody');
+                        tbody.empty(); // Vider le tableau précédent
+                        if (data.length > 0) {
+                            data.forEach(function (item) {
+                                tbody.append(`
+                                    <tr>
+                                        <td>${item.etablissement}</td>
+                                        <td>${item.nb_contraventions}</td>
+                                    </tr>
+                                `);
+                            });
+                            $('#results-table').show(); // Afficher le tableau
+                        } else {
+                            alert("Aucun résultat trouvé.");
+                        }
+                    },
+                    error: function () {
+                        alert("Une erreur est survenue lors de la récupération des données.");
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

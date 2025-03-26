@@ -25,7 +25,7 @@ scheduler.add_job(
 
 @app.route('/contrevenants', methods=['GET'])
 def get_contrevenants():
-    """Retourne la liste des contraventions entre deux dates spécifiées."""
+    """Retourne la liste des contrevenants avec leur nombre de contraventions entre deux dates."""
     try:
         # Récupérer les paramètres 'du' et 'au' depuis la requête
         date_du = request.args.get('du')
@@ -42,10 +42,12 @@ def get_contrevenants():
         except ValueError:
             return jsonify({"error": "Les dates doivent être au format ISO 8601 (YYYY-MM-DD)."}), 400
 
-        # Construire la requête SQL pour filtrer par dates
+        # Construire la requête SQL pour regrouper par établissement
         query = """
-            SELECT * FROM violations
+            SELECT etablissement, COUNT(*) AS nb_contraventions
+            FROM violations
             WHERE date BETWEEN ? AND ?
+            GROUP BY etablissement
         """
         params = (date_du, date_au)
 
@@ -56,11 +58,8 @@ def get_contrevenants():
         results = cursor.fetchall()
         conn.close()
 
-        # Récupérer les noms des colonnes pour les inclure dans le JSON
-        columns = [column[0] for column in cursor.description]
-
         # Convertir les résultats en format JSON
-        data = [dict(zip(columns, row)) for row in results]
+        data = [{"etablissement": row[0], "nb_contraventions": row[1]} for row in results]
         return jsonify(data), 200
 
     except Exception as e:
