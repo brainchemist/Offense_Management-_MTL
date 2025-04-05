@@ -4,6 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import sqlite3
 from data_processor import load_data  # Import the load_data function
+from jsonschema import validate, ValidationError
 
 app = Flask(__name__)
 
@@ -128,7 +129,7 @@ def get_etablissements():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/doc', methods=['GET'])
+@app.route('/doc', methods=['GET'], endpoint="raml_doc")
 def doc():
     """Affiche la documentation RAML du service web."""
     return render_template("doc.html")
@@ -186,10 +187,65 @@ def search():
     return render_template("results.html", results=results, columns=columns)
 
 
+INSPECTION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "nom_etablissement": {"type": "string"},
+        "adresse": {"type": "string"},
+        "ville": {"type": "string"},
+        "date_visite": {"type": "string", "format": "date"},
+        "nom_client": {"type": "string"},
+        "description_probleme": {"type": "string"},
+    },
+    "required": ["nom_etablissement", "adresse", "ville", "date_visite", "nom_client", "description_probleme"],
+    "additionalProperties": False,
+}
+
+
+@app.route("/plainte", methods=["GET"])
+def plainte():
+    """Affiche le formulaire de demande d'inspection."""
+    return render_template("plainte.html")
+
+
+@app.route("/demande-inspection", methods=["POST"])
+def demande_inspection():
+    """Reçoit une demande d'inspection et valide le JSON."""
+    try:
+        # Récupérer les données JSON envoyées par le client
+        data = request.get_json()
+
+        # Valider le JSON avec le schéma défini
+        validate(instance=data, schema=INSPECTION_SCHEMA)
+
+        # Insérer les données dans la base de données
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO inspections (
+                nom_etablissement, adresse, ville, date_visite, nom_client, description_probleme
+            ) VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            data["nom_etablissement"],
+            data["adresse"],
+            data["ville"],
+            data["date_visite"],
+            data["nom_client"],
+            data["description_probleme"]
+        ))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"message": "Demande d'inspection enregistrée avec succès."}), 201
+
+    except ValidationError as e:
+        return jsonify({"error": f"Validation JSON échouée : {e.message}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     try:
-        # Démarrer l'application Flask
         app.run(debug=True)
     finally:
-        # Arrêter le scheduler lorsque l'application est arrêtée
         scheduler.shutdown()

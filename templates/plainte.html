@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande d'Inspection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Demande d'Inspection</h1>
+
+    <!-- Formulaire de plainte -->
+    <form id="plainte-form">
+        <label for="nom_etablissement">Nom de l'établissement :</label>
+        <input type="text" id="nom_etablissement" name="nom_etablissement" required><br><br>
+
+        <label for="adresse">Adresse :</label>
+        <input type="text" id="adresse" name="adresse" required><br><br>
+
+        <label for="ville">Ville :</label>
+        <input type="text" id="ville" name="ville" required><br><br>
+
+        <label for="date_visite">Date de la visite (YYYY-MM-DD) :</label>
+        <input type="date" id="date_visite" name="date_visite" required><br><br>
+
+        <label for="nom_client">Nom et prénom du client :</label>
+        <input type="text" id="nom_client" name="nom_client" required><br><br>
+
+        <label for="description_probleme">Description du problème :</label>
+        <textarea id="description_probleme" name="description_probleme" required></textarea><br><br>
+
+        <button type="submit">Soumettre la plainte</button>
+    </form>
+
+    <p id="message" style="display: none;"></p>
+
+    <script>
+        $(document).ready(function () {
+            // Gérer la soumission du formulaire via Ajax
+            $('#plainte-form').on('submit', function (event) {
+                event.preventDefault();
+
+                // Récupérer les données du formulaire
+                const data = {
+                    nom_etablissement: $('#nom_etablissement').val(),
+                    adresse: $('#adresse').val(),
+                    ville: $('#ville').val(),
+                    date_visite: $('#date_visite').val(),
+                    nom_client: $('#nom_client').val(),
+                    description_probleme: $('#description_probleme').val(),
+                };
+
+                // Envoyer la requête Ajax
+                $.ajax({
+                    url: '/demande-inspection',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        $('#message').text(response.message).css('color', 'green').show();
+                    },
+                    error: function (xhr) {
+                        const errorMessage = xhr.responseJSON?.error || "Une erreur inconnue est survenue.";
+                        $('#message').text(errorMessage).css('color', 'red').show();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

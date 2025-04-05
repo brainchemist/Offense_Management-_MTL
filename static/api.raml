@@ -45,6 +45,57 @@ baseUri: http://localhost:5000
                 "error": "Erreur interne du serveur."
               }
 
+/demande-inspection:
+  post:
+    description: Soumettre une demande d'inspection pour un restaurant.
+    body:
+      application/json:
+        example: |
+          {
+            "nom_etablissement": "Restaurant XYZ",
+            "adresse": "123 Rue Principale",
+            "ville": "Montréal",
+            "date_visite": "2023-10-01",
+            "nom_client": "Jean Dupont",
+            "description_probleme": "Problème d'hygiène observé."
+          }
+        schema: |
+          {
+            "type": "object",
+            "properties": {
+              "nom_etablissement": { "type": "string" },
+              "adresse": { "type": "string" },
+              "ville": { "type": "string" },
+              "date_visite": { "type": "string", "format": "date" },
+              "nom_client": { "type": "string" },
+              "description_probleme": { "type": "string" }
+            },
+            "required": ["nom_etablissement", "adresse", "ville", "date_visite", "nom_client", "description_probleme"],
+            "additionalProperties": false
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            example: |
+              {
+                "message": "Demande d'inspection enregistrée avec succès."
+              }
+      400:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Validation JSON échouée : La propriété 'nom_etablissement' est requise."
+              }
+      500:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Erreur interne du serveur."
+              }
+
 /doc:
   get:
     description: Affiche la documentation RAML du service web.
