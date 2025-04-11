@@ -96,17 +96,52 @@ baseUri: http://localhost:5000
                 "error": "Erreur interne du serveur."
               }
 
+
 /doc:
+  displayName: Documentation Endpoint
+  description: Fournit la documentation de l'API sous forme de fichier RAML.
   get:
-    description: Affiche la documentation RAML du service web.
+    description: Récupère la documentation de l'API au format RAML.
     responses:
       200:
+        description: La documentation a été récupérée avec succès.
         body:
-          text/html:
+          text/yaml:
             example: |
-              <!DOCTYPE html>
-              <html>
-              <body>
-                <h1>Documentation de l'API</h1>
-              </body>
-              </html>
+              #%RAML 1.0
+              title: Example API
+              version: v1
+              /resource:
+                get:
+                  responses:
+                    200:
+                      body:
+                        application/json:
+                          example: { "message": "Hello, world!" }
+
+/demande-inspection/{demandeId}:
+  displayName: Gestion des demandes d'inspection
+  description: Permet de gérer les demandes d'inspection.
+  uriParameters:
+    demandeId:
+      description: Identifiant unique de la demande d'inspection à supprimer.
+      type: integer
+      example: 123
+  delete:
+    description: Supprime une demande d'inspection spécifiée par son identifiant.
+    responses:
+      200:
+        description: La demande d'inspection a été supprimée avec succès.
+        body:
+          application/json:
+            example: { "message": "Demande d'inspection avec ID 123 supprimée avec succès." }
+      404:
+        description: La demande d'inspection spécifiée n'existe pas.
+        body:
+          application/json:
+            example: { "error": "Demande d'inspection non trouvée." }
+      500:
+        description: Erreur interne du serveur.
+        body:
+          application/json:
+            example: { "error": "Internal Server Error", "details": "An unexpected error occurred while processing the request." }
