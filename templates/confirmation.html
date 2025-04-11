@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de la Plainte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .confirm {
+            background-color: #28a745;
+            color: white;
+        }
+        .cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vérifiez les détails de votre plainte</h1>
+    <div class="details">
+        <p><strong>Nom de l'établissement :</strong> {{ details['nom_etablissement'] }}</p>
+        <p><strong>Adresse :</strong> {{ details['adresse'] }}</p>
+        <p><strong>Ville :</strong> {{ details['ville'] }}</p>
+        <p><strong>Date de visite :</strong> {{ details['date_visite'] }}</p>
+        <p><strong>Nom du client :</strong> {{ details['nom_client'] }}</p>
+        <p><strong>Description du problème :</strong> {{ details['description_probleme'] }}</p>
+    </div>
+
+    <button class="confirm" onclick="confirmPlainte()">Confirmer</button>
+    <button class="cancel" onclick="cancelPlainte()">Annuler</button>
+
+    <div class="message" id="responseMessage"></div>
+
+    <script>
+        // Confirmer la plainte (enregistrement dans la base de données)
+        function confirmPlainte() {
+            fetch('/demande-inspection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nom_etablissement: "{{ details['nom_etablissement'] }}",
+                    adresse: "{{ details['adresse'] }}",
+                    ville: "{{ details['ville'] }}",
+                    date_visite: "{{ details['date_visite'] }}",
+                    nom_client: "{{ details['nom_client'] }}",
+                    description_probleme: "{{ details['description_probleme'] }}"
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    document.getElementById('responseMessage').textContent = `${data.message} ID de la plainte : ${data.id}`;
+                    document.getElementById('responseMessage').style.color = 'green';
+                } else {
+                    document.getElementById('responseMessage').textContent = data.error || 'Une erreur est survenue.';
+                    document.getElementById('responseMessage').style.color = 'red';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                document.getElementById('responseMessage').textContent = 'Une erreur réseau est survenue.';
+            });
+        }
+
+        // Annuler la plainte
+        function cancelPlainte() {
+            window.location.href = '/'; // Rediriger vers la page d'accueil
+        }
+    </script>
+</body>
+</html>

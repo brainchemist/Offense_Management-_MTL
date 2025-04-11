@@ -1,10 +1,14 @@
+import json
 from datetime import datetime
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, redirect
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import sqlite3
 from data_processor import load_data  # Import the load_data function
 from jsonschema import validate, ValidationError
+from urllib.parse import unquote
+from urllib.parse import quote
+
 
 app = Flask(__name__)
 
@@ -201,11 +205,68 @@ INSPECTION_SCHEMA = {
     "additionalProperties": False,
 }
 
-
-@app.route("/plainte", methods=["GET"])
-def plainte():
-    """Affiche le formulaire de demande d'inspection."""
+@app.route('/plainte', methods=['GET'])
+def afficher_formulaire_plainte():
+    """
+    Affiche le formulaire de soumission de plainte.
+    """
     return render_template("plainte.html")
+
+@app.route('/plainte', methods=['POST'])
+def plainte():
+    """
+    Traite la soumission d'une plainte et redirige vers une page de confirmation.
+    """
+    try:
+        # Récupérer les données du formulaire
+        nom_etablissement = request.form.get("nom_etablissement")
+        adresse = request.form.get("adresse")
+        ville = request.form.get("ville")
+        date_visite = request.form.get("date_visite")
+        nom_client = request.form.get("nom_client")
+        description_probleme = request.form.get("description_probleme")
+
+        # Valider les données (optionnel, mais recommandé)
+        if not all([nom_etablissement, adresse, ville, date_visite, nom_client, description_probleme]):
+            return jsonify({"error": "Tous les champs sont requis."}), 400
+
+        # Créer un dictionnaire avec les détails de la plainte
+        details = {
+            "nom_etablissement": nom_etablissement,
+            "adresse": adresse,
+            "ville": ville,
+            "date_visite": date_visite,
+            "nom_client": nom_client,
+            "description_probleme": description_probleme
+        }
+
+        # Rediriger vers la page de confirmation avec les détails encodés dans l'URL
+        details_encoded = quote(json.dumps(details))
+        return redirect(f"/confirmation?details={details_encoded}")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/confirmation', methods=['GET'])
+def confirmation():
+    """
+    Affiche les détails de la plainte pour confirmation.
+    """
+    try:
+        # Récupérer les détails encodés dans l'URL
+        details_encoded = request.args.get('details')
+        if not details_encoded:
+            return jsonify({"error": "Aucun détail de plainte trouvé."}), 400
+
+        # Décoder et parser les détails JSON
+        details = json.loads(unquote(details_encoded))
+
+        # Rendre la page de confirmation avec les détails
+        return render_template("confirmation.html", details=details)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/demande-inspection", methods=["POST"])
@@ -233,13 +294,49 @@ def demande_inspection():
             data["nom_client"],
             data["description_probleme"]
         ))
+
+        # Récupérer l'ID de la dernière insertion
+        inserted_id = cursor.lastrowid
+
         conn.commit()
         conn.close()
 
-        return jsonify({"message": "Demande d'inspection enregistrée avec succès."}), 201
+        return jsonify({
+            "message": "Demande d'inspection enregistrée avec succès.",
+            "id": inserted_id  # Inclure l'ID dans la réponse
+        }), 201
 
     except ValidationError as e:
         return jsonify({"error": f"Validation JSON échouée : {e.message}"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/supprimer-demande', methods=['GET'])
+def supprimer_demande():
+    """Affiche la page pour supprimer une demande d'inspection."""
+    return render_template("supprimer_demande.html")
+
+@app.route('/demande-inspection/<int:demande_id>', methods=['DELETE'])
+def supprimer_demande_inspection(demande_id):
+    """Supprime une demande d'inspection par son ID."""
+    try:
+        # Connexion à la base de données
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Vérifier si l'ID existe
+        cursor.execute("SELECT id FROM inspections WHERE id = ?", (demande_id,))
+        result = cursor.fetchone()
+        if not result:
+            return jsonify({"error": "Aucune demande trouvée avec cet ID."}), 404
+
+        # Supprimer la demande
+        cursor.execute("DELETE FROM inspections WHERE id = ?", (demande_id,))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"message": f"Demande d'inspection avec l'ID {demande_id} supprimée avec succès."}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

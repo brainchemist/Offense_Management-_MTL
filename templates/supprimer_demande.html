@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supprimer une Demande d'Inspection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="number"] {
+            padding: 5px;
+            width: 200px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Supprimer une Demande d'Inspection</h1>
+    <p>Veuillez entrer l'ID de la demande que vous souhaitez supprimer :</p>
+
+    <form id="deleteForm">
+        <label for="demande_id">ID de la demande :</label>
+        <input type="number" id="demande_id" name="demande_id" required>
+        <button type="submit">Supprimer</button>
+    </form>
+
+    <div class="message" id="responseMessage"></div>
+
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Empêcher le rechargement de la page
+
+        // Récupérer l'ID de la demande
+        const demandeId = document.getElementById('demande_id').value;
+
+        // Envoyer une requête DELETE au backend
+        fetch(`/demande-inspection/${demandeId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Si le statut HTTP n'est pas 2xx, lever une erreur
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Afficher le message de succès
+            const responseMessage = document.getElementById('responseMessage');
+            responseMessage.textContent = data.message;
+            responseMessage.style.color = 'green';
+        })
+        .catch(error => {
+            // Afficher le message d'erreur
+            console.error('Erreur:', error);
+            const responseMessage = document.getElementById('responseMessage');
+            responseMessage.textContent = error.error || 'Une erreur est survenue.';
+            responseMessage.style.color = 'red';
+        });
+    });
+    </script>
+</body>
+</html>
