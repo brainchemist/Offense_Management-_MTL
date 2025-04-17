@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recherche de Contrevenants</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <h1>Recherche de Contrevenants</h1>
 
-    <!-- Formulaire de recherche rapide par dates -->
     <h2>Recherche rapide par dates</h2>
     <form id="search-by-dates-form">
         <label for="du">Date de début (YYYY-MM-DD) :</label>
@@ -30,7 +30,6 @@
         <tbody></tbody>
     </table>
 
-    <!-- Formulaire de recherche par nom d'établissement -->
     <h2>Recherche par nom d'établissement</h2>
     <form id="search-by-name-form">
         <label for="etablissement">Choisissez un établissement :</label>
@@ -53,7 +52,6 @@
         <tbody></tbody>
     </table>
 
-    <!-- Formulaire de recherche avancée -->
     <h2>Recherche avancée</h2>
     <form action="/search" method="post">
         <label for="etablissement">Nom d'établissement :</label>
@@ -65,9 +63,13 @@
         <button type="submit">Rechercher</button>
     </form>
 
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="/plainte" class="redirect-button">Soumettre une Plainte</a>
+        <a href="/supprimer-demande" class="redirect-button">Supprimer une Demande</a>
+    </div>
+
     <script>
         $(document).ready(function () {
-            // Remplir la liste déroulante avec les noms des établissements
             function loadEtablissements() {
                 $.ajax({
                     url: '/etablissements',
@@ -86,10 +88,8 @@
                 });
             }
 
-            // Charger les établissements au chargement de la page
             loadEtablissements();
 
-            // Recherche rapide par dates
             $('#search-by-dates-form').on('submit', function (event) {
                 event.preventDefault();
                 const dateDu = $('#du').val();
@@ -122,7 +122,6 @@
                 });
             });
 
-            // Recherche par nom d'établissement
             $('#search-by-name-form').on('submit', function (event) {
                 event.preventDefault();
                 const etablissement = $('#etablissement').val();

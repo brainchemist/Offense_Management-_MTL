@@ -4,32 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmation de la Plainte</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .details {
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            margin-right: 10px;
-            border: none;
-            cursor: pointer;
-        }
-        .confirm {
-            background-color: #28a745;
-            color: white;
-        }
-        .cancel {
-            background-color: #dc3545;
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/confirmation.css') }}">
 </head>
 <body>
     <h1>Vérifiez les détails de votre plainte</h1>
+
     <div class="details">
         <p><strong>Nom de l'établissement :</strong> {{ details['nom_etablissement'] }}</p>
         <p><strong>Adresse :</strong> {{ details['adresse'] }}</p>
@@ -39,13 +18,16 @@
         <p><strong>Description du problème :</strong> {{ details['description_probleme'] }}</p>
     </div>
 
-    <button class="confirm" onclick="confirmPlainte()">Confirmer</button>
-    <button class="cancel" onclick="cancelPlainte()">Annuler</button>
+    <div style="text-align: center;">
+        <button class="confirm" onclick="confirmPlainte()">Confirmer</button>
+        <button class="cancel" onclick="cancelPlainte()">Annuler</button>
+    </div>
 
     <div class="message" id="responseMessage"></div>
 
+    <a href="/" class="return-home">Retour à la page d'accueil</a>
+
     <script>
-        // Confirmer la plainte (enregistrement dans la base de données)
         function confirmPlainte() {
             fetch('/demande-inspection', {
                 method: 'POST',
@@ -63,12 +45,13 @@
             })
             .then(response => response.json())
             .then(data => {
+                const messageElement = document.getElementById('responseMessage');
                 if (data.message) {
-                    document.getElementById('responseMessage').textContent = `${data.message} ID de la plainte : ${data.id}`;
-                    document.getElementById('responseMessage').style.color = 'green';
+                    messageElement.textContent = `${data.message} ID de la plainte : ${data.id}`;
+                    messageElement.classList.add('success');
                 } else {
-                    document.getElementById('responseMessage').textContent = data.error || 'Une erreur est survenue.';
-                    document.getElementById('responseMessage').style.color = 'red';
+                    messageElement.textContent = data.error || 'Une erreur est survenue.';
+                    messageElement.classList.add('error');
                 }
             })
             .catch(error => {
@@ -77,9 +60,8 @@
             });
         }
 
-        // Annuler la plainte
         function cancelPlainte() {
-            window.location.href = '/'; // Rediriger vers la page d'accueil
+            window.location.href = '/';
         }
     </script>
 </body>

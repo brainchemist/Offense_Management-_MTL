@@ -1,0 +1,149 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f9f9f9;
+    color: #333;
+    padding: 20px;
+}
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #4CAF50;
+}
+
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    font-size: 14px;
+    display: none;
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tbody tr:hover {
+    background-color: #e0f7fa;
+}
+
+#results-table,
+#infractions-table {
+    display: none;
+}
+
+#results-table.show,
+#infractions-table.show {
+    display: table;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.redirect-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.redirect-button:hover {
+    background-color: #218838;
+}
+
+.redirect-button {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.redirect-button:hover {
+    background-color: #45a049;
+}

@@ -1,11 +1,11 @@
 #%RAML 1.0
-title: Service des Contraventions
+title: Service des Contraventions et Inspections
 version: v1
 baseUri: http://localhost:5000
 
 /contrevenants:
   get:
-    description: Retourne la liste des contraventions émises entre deux dates spécifiées.
+    description: Retourne la liste des contraventions émises entre deux dates spécifiées, regroupées par établissement.
     queryParameters:
       du:
         description: Date de début (format ISO 8601, ex. 2022-05-08).
@@ -13,6 +13,44 @@ baseUri: http://localhost:5000
         required: true
       au:
         description: Date de fin (format ISO 8601, ex. 2024-05-15).
+        type: string
+        required: true
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {
+                  "etablissement": "Restaurant XYZ",
+                  "nb_contraventions": 3
+                },
+                {
+                  "etablissement": "Café ABC",
+                  "nb_contraventions": 1
+                }
+              ]
+      400:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Les paramètres 'du' et 'au' sont requis."
+              }
+      500:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Erreur interne du serveur."
+              }
+
+/infractions:
+  get:
+    description: Retourne les infractions pour un établissement spécifique.
+    queryParameters:
+      etablissement:
+        description: Nom de l'établissement à rechercher.
         type: string
         required: true
     responses:
@@ -35,8 +73,32 @@ baseUri: http://localhost:5000
           application/json:
             example: |
               {
-                "error": "Les paramètres 'du' et 'au' sont requis."
+                "error": "Le paramètre 'etablissement' est requis."
               }
+      500:
+        body:
+          application/json:
+            example: |
+              {
+                "error": "Erreur interne du serveur."
+              }
+
+/etablissements:
+  get:
+    description: Retourne la liste distincte des établissements ayant commis des infractions.
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {
+                  "etablissement": "Restaurant XYZ"
+                },
+                {
+                  "etablissement": "Café ABC"
+                }
+              ]
       500:
         body:
           application/json:
@@ -79,7 +141,8 @@ baseUri: http://localhost:5000
           application/json:
             example: |
               {
-                "message": "Demande d'inspection enregistrée avec succès."
+                "message": "Demande d'inspection enregistrée avec succès.",
+                "id": 123
               }
       400:
         body:
@@ -96,29 +159,6 @@ baseUri: http://localhost:5000
                 "error": "Erreur interne du serveur."
               }
 
-
-/doc:
-  displayName: Documentation Endpoint
-  description: Fournit la documentation de l'API sous forme de fichier RAML.
-  get:
-    description: Récupère la documentation de l'API au format RAML.
-    responses:
-      200:
-        description: La documentation a été récupérée avec succès.
-        body:
-          text/yaml:
-            example: |
-              #%RAML 1.0
-              title: Example API
-              version: v1
-              /resource:
-                get:
-                  responses:
-                    200:
-                      body:
-                        application/json:
-                          example: { "message": "Hello, world!" }
-
 /demande-inspection/{demandeId}:
   displayName: Gestion des demandes d'inspection
   description: Permet de gérer les demandes d'inspection.
@@ -134,14 +174,39 @@ baseUri: http://localhost:5000
         description: La demande d'inspection a été supprimée avec succès.
         body:
           application/json:
-            example: { "message": "Demande d'inspection avec ID 123 supprimée avec succès." }
+            example: |
+              {
+                "message": "Demande d'inspection avec ID 123 supprimée avec succès."
+              }
       404:
         description: La demande d'inspection spécifiée n'existe pas.
         body:
           application/json:
-            example: { "error": "Demande d'inspection non trouvée." }
+            example: |
+              {
+                "error": "Aucune demande trouvée avec cet ID."
+              }
       500:
         description: Erreur interne du serveur.
         body:
           application/json:
-            example: { "error": "Internal Server Error", "details": "An unexpected error occurred while processing the request." }
+            example: |
+              {
+                "error": "Erreur interne du serveur."
+              }
+
+/doc:
+  displayName: Documentation Endpoint
+  description: Fournit la documentation de l'API sous forme de fichier RAML.
+  get:
+    description: Récupère la documentation de l'API au format RAML.
+    responses:
+      200:
+        description: La documentation a été récupérée avec succès.
+        body:
+          text/yaml:
+            example: |
+              #%RAML 1.0
+              title: Service des Contraventions et Inspections
+              version: v1
+              baseUri: http://localhost:5000
