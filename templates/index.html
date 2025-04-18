@@ -6,6 +6,15 @@
     <title>Recherche de Contrevenants</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
     <h1>Recherche de Contrevenants</h1>
@@ -20,7 +29,7 @@
         <br><br>
         <button type="submit">Rechercher</button>
     </form>
-    <table id="results-table" border="1" style="display: none;">
+    <table id="results-table" style="display: none;">
         <thead>
             <tr>
                 <th>Nom de l'établissement</th>
@@ -32,14 +41,14 @@
 
     <h2>Recherche par nom d'établissement</h2>
     <form id="search-by-name-form">
-        <label for="etablissement">Choisissez un établissement :</label>
-        <select id="etablissement" name="etablissement" required>
+        <label for="etablissement-select">Choisissez un établissement :</label>
+        <select id="etablissement-select" name="etablissement" required>
             <option value="">-- Sélectionnez un restaurant --</option>
         </select>
         <br><br>
         <button type="submit">Rechercher</button>
     </form>
-    <table id="infractions-table" border="1" style="display: none;">
+    <table id="infractions-table" style="display: none;">
         <thead>
             <tr>
                 <th>Date</th>
@@ -75,7 +84,7 @@
                     url: '/etablissements',
                     method: 'GET',
                     success: function (data) {
-                        const select = $('#etablissement');
+                        const select = $('#etablissement-select'); // Updated selector
                         select.empty();
                         select.append('<option value="">-- Sélectionnez un restaurant --</option>');
                         data.forEach(function (item) {
@@ -124,7 +133,7 @@
 
             $('#search-by-name-form').on('submit', function (event) {
                 event.preventDefault();
-                const etablissement = $('#etablissement').val();
+                const etablissement = $('#etablissement-select').val(); // Updated selector
 
                 $.ajax({
                     url: '/infractions',

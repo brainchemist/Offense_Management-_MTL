@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Résultats de la Recherche</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
     <h1>Résultats de la Recherche</h1>
     {% if results %}
-        <table border="1">
+        <table>
             <thead>
                 <tr>
                     {% for column in columns %}

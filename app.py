@@ -9,7 +9,6 @@ from jsonschema import validate, ValidationError
 from urllib.parse import unquote
 from urllib.parse import quote
 
-
 app = Flask(__name__)
 
 DB_PATH = "violations.db"
@@ -27,19 +26,22 @@ scheduler.add_job(
 
 @app.route('/contrevenants', methods=['GET'])
 def get_contrevenants():
-    """Retourne la liste des contrevenants avec leur nombre de contraventions entre deux dates."""
+    """Retourne la liste des contrevenants avec leur nombre de contraventions
+    entre deux dates."""
     try:
         date_du = request.args.get('du')
         date_au = request.args.get('au')
 
         if not date_du or not date_au:
-            return jsonify({"error": "Les paramètres 'du' et 'au' sont requis."}), 400
+            return jsonify({"error": "Les paramètres "
+                                     "'du' et 'au' sont requis."}), 400
 
         try:
             datetime.fromisoformat(date_du)
             datetime.fromisoformat(date_au)
         except ValueError:
-            return jsonify({"error": "Les dates doivent être au format ISO 8601 (YYYY-MM-DD)."}), 400
+            return jsonify({"error": "Les dates doivent être au format ISO "
+                                     "8601 (YYYY-MM-DD)."}), 400
 
         query = """
             SELECT etablissement, COUNT(*) AS nb_contraventions
@@ -55,7 +57,8 @@ def get_contrevenants():
         results = cursor.fetchall()
         conn.close()
 
-        data = [{"etablissement": row[0], "nb_contraventions": row[1]} for row in results]
+        data = [{"etablissement": row[0], "nb_contraventions": row[1]}
+                for row in results]
         return jsonify(data), 200
 
     except Exception as e:
@@ -69,7 +72,8 @@ def get_infractions():
         etablissement = request.args.get('etablissement')
 
         if not etablissement:
-            return jsonify({"error": "Le paramètre 'etablissement' est requis."}), 400
+            return jsonify({"error": "Le paramètre "
+                                     "'etablissement' est requis."}), 400
 
         query = """
             SELECT * FROM violations
@@ -165,7 +169,8 @@ def search():
 
     columns = [column[0] for column in cursor.description]
 
-    return render_template("results.html", results=results, columns=columns)
+    return render_template("results.html",
+                           results=results, columns=columns)
 
 
 INSPECTION_SCHEMA = {
@@ -178,9 +183,11 @@ INSPECTION_SCHEMA = {
         "nom_client": {"type": "string"},
         "description_probleme": {"type": "string"},
     },
-    "required": ["nom_etablissement", "adresse", "ville", "date_visite", "nom_client", "description_probleme"],
+    "required": ["nom_etablissement", "adresse", "ville", "date_visite",
+                 "nom_client", "description_probleme"],
     "additionalProperties": False,
 }
+
 
 @app.route('/plainte', methods=['GET'])
 def afficher_formulaire_plainte():
@@ -189,10 +196,12 @@ def afficher_formulaire_plainte():
     """
     return render_template("plainte.html")
 
+
 @app.route('/plainte', methods=['POST'])
 def plainte():
     """
-    Traite la soumission d'une plainte et redirige vers une page de confirmation.
+    Traite la soumission d'une plainte et redirige
+    vers une page de confirmation.
     """
     try:
         nom_etablissement = request.form.get("nom_etablissement")
@@ -202,7 +211,8 @@ def plainte():
         nom_client = request.form.get("nom_client")
         description_probleme = request.form.get("description_probleme")
 
-        if not all([nom_etablissement, adresse, ville, date_visite, nom_client, description_probleme]):
+        if not all([nom_etablissement, adresse, ville, date_visite,
+                    nom_client, description_probleme]):
             return jsonify({"error": "Tous les champs sont requis."}), 400
 
         details = {
@@ -220,29 +230,37 @@ def plainte():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.errorhandler(404)
 def page_not_found(e):
     """Handle 404 errors and render the error.html template."""
-    return render_template("error.html", code=404, message="Page not found"), 404
+    return render_template("error.html", code=404,
+                           message="Page not found"), 404
+
 
 @app.errorhandler(500)
 def internal_server_error(e):
     """Handle 500 errors and render the error.html template."""
-    return render_template("error.html", code=500, message="Internal server error"), 500
+    return render_template("error.html", code=500,
+                           message="Internal server error"), 500
+
 
 @app.route('/simulate-error')
 def simulate_error():
     """Simulate an error for testing purposes."""
     abort(500)
 
+
 @app.route('/nonexistent-route')
 def nonexistent_route():
     """Simulate a 404 error for testing purposes."""
     abort(404)
 
+
 @app.route('/etablissements-infraction', methods=['GET'])
 def get_etablissements_infraction():
-    """Retourne la liste des établissements ayant commis des infractions, triée par nombre d'infractions."""
+    """Retourne la liste des établissements ayant commis des infractions,
+    triée par nombre d'infractions."""
     try:
         query = """
             SELECT etablissement, COUNT(*) AS nb_infractions
@@ -257,7 +275,8 @@ def get_etablissements_infraction():
         results = cursor.fetchall()
         conn.close()
 
-        data = [{"etablissement": row[0], "nb_infractions": row[1]} for row in results]
+        data = [{"etablissement": row[0], "nb_infractions": row[1]}
+                for row in results]
         return jsonify(data), 200
 
     except Exception as e:
@@ -276,7 +295,8 @@ def confirmation():
 
         details = json.loads(unquote(details_encoded))
 
-        return render_template("confirmation.html", details=details)
+        return render_template("confirmation.html",
+                               details=details)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -294,7 +314,8 @@ def demande_inspection():
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO inspections (
-                nom_etablissement, adresse, ville, date_visite, nom_client, description_probleme
+                nom_etablissement, adresse, ville, date_visite,
+                nom_client, description_probleme
             ) VALUES (?, ?, ?, ?, ?, ?)
         """, (
             data["nom_etablissement"],
@@ -316,14 +337,17 @@ def demande_inspection():
         }), 201
 
     except ValidationError as e:
-        return jsonify({"error": f"Validation JSON échouée : {e.message}"}), 400
+        return jsonify({"error": f"Validation JSON échouée : "
+                                 f"{e.message}"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/supprimer-demande', methods=['GET'])
 def supprimer_demande():
     """Affiche la page pour supprimer une demande d'inspection."""
     return render_template("supprimer_demande.html")
+
 
 @app.route('/demande-inspection/<int:demande_id>', methods=['DELETE'])
 def supprimer_demande_inspection(demande_id):
@@ -332,16 +356,20 @@ def supprimer_demande_inspection(demande_id):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM inspections WHERE id = ?", (demande_id,))
+        cursor.execute("SELECT id FROM inspections WHERE id = ?",
+                       (demande_id,))
         result = cursor.fetchone()
         if not result:
-            return jsonify({"error": "Aucune demande trouvée avec cet ID."}), 404
+            return jsonify({"error": "Aucune demande "
+                                     "trouvée avec cet ID."}), 404
 
         cursor.execute("DELETE FROM inspections WHERE id = ?", (demande_id,))
         conn.commit()
         conn.close()
 
-        return jsonify({"message": f"Demande d'inspection avec l'ID {demande_id} supprimée avec succès."}), 200
+        return (jsonify({"message": f"Demande d'inspection avec l'ID "
+                                    f"{demande_id} supprimée "
+                                    f"avec succès."}), 200)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

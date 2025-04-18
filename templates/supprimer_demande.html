@@ -13,7 +13,12 @@
     <form id="deleteForm">
         <label for="demande_id">ID de la demande :</label>
         <input type="number" id="demande_id" name="demande_id" required>
-        <button type="submit">Supprimer</button>
+
+        <!-- Button Container -->
+        <div class="button-container">
+            <button type="submit">Supprimer</button>
+            <a href="/" class="return-home">Retour à la page d'accueil</a>
+        </div>
     </form>
 
     <div class="message" id="responseMessage"></div>
@@ -40,12 +45,14 @@
                 const responseMessage = document.getElementById('responseMessage');
                 responseMessage.textContent = data.message;
                 responseMessage.classList.add('success');
+                responseMessage.style.display = 'block';
             })
             .catch(error => {
                 console.error('Erreur:', error);
                 const responseMessage = document.getElementById('responseMessage');
                 responseMessage.textContent = error.error || 'Une erreur est survenue.';
                 responseMessage.classList.add('error');
+                responseMessage.style.display = 'block';
             });
         });
     </script>
