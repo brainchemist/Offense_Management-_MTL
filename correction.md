@@ -149,7 +149,7 @@ Ce document décrit les fonctionnalités développées dans le cadre du projet a
 ## **F1 (15xp): Déploiement sur une plateforme infonuagique**
 ### **Description**
 - L'application est entièrement déployée sur une plateforme infonuagique (par exemple, Heroku, AWS, ou Render).
-- URL de l'application : [https://chaca425.pythonanywhere.com/supprimer-demande]
+- URL de l'application : https://chaca425.pythonanywhere.com
 
 ---
 
